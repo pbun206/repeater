@@ -1,6 +1,5 @@
 use clap::Parser;
 
-use anyhow::anyhow;
 
 use self::crud::DB;
 

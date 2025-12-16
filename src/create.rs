@@ -120,7 +120,6 @@ fn capture_cards(card_path: &Path) -> io::Result<()> {
                 help.push_str(&format!("Cards created: {}", card_created_count));
                 if let Some(time) = card_last_save_attempt &&  time.elapsed().as_secs_f32() < 1.0 && status.is_some(){
                             help.push_str(&format!(" | {}", status.clone().unwrap()));
-                        
                     }
 
                 let instructions = Paragraph::new(help)
