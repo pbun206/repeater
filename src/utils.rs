@@ -86,7 +86,7 @@ pub fn content_to_card(
 ) -> Result<Card> {
     let (question, answer, cloze) = parse_card_lines(contents);
 
-    let card_hash = get_hash(contents);
+    let card_hash = get_hash(contents).ok_or_else(|| anyhow!("Unable to hash contents"))?;
     if let (Some(q), Some(a)) = (question, answer) {
         let content = CardContent::Basic {
             question: q,
@@ -119,8 +119,11 @@ pub fn content_to_card(
     }
 }
 
-pub fn get_hash(content: &str) -> String {
-    blake3::hash(content.as_bytes()).to_string()
+pub fn get_hash(content: &str) -> Option<String> {
+    if let Some(content) = trim_line(content) {
+        return Some(blake3::hash(content.as_bytes()).to_string());
+    }
+    None
 }
 
 pub fn cards_from_md(path: &Path) -> Result<Vec<Card>> {

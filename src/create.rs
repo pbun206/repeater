@@ -6,6 +6,7 @@ use crate::{
 };
 
 use std::{
+    collections::HashSet,
     fs::{self, OpenOptions},
     io::{self, Write},
     path::Path,
@@ -98,7 +99,13 @@ async fn capture_cards(db: &DB, card_path: &Path) -> io::Result<()> {
     let editor_result: io::Result<()> = async {
         let mut editor = Editor::new();
         let mut status: Option<String> = None;
-        let mut num_cards_in_collection = cards_from_md(card_path).unwrap_or_default().len();
+        let existing_cards = cards_from_md(card_path).unwrap_or_default();
+        let unique_hashes: HashSet<_> = existing_cards
+            .into_iter()
+            .map(|c| c.card_hash)
+            .collect();
+
+        let mut num_cards_in_collection = unique_hashes.len();
         let mut card_created_count = 0;
         let mut card_last_save_attempt: Option<std::time::Instant> = None;
         let mut view_height = 0usize;
