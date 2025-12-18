@@ -202,14 +202,16 @@ impl DB {
         &self,
         card_hashes: HashMap<String, Card>,
         card_limit: Option<usize>,
+        new_card_limit: Option<usize>,
     ) -> Result<Vec<Card>> {
         let now = chrono::Utc::now().to_rfc3339();
 
-        let sql = "SELECT card_hash 
+        let sql = "SELECT card_hash, review_count
            FROM cards
            WHERE due_date <= ? OR due_date IS NULL;";
         let mut rows = sqlx::query(sql).bind(now).fetch(&self.pool);
         let mut cards = Vec::new();
+        let mut num_new_cards = 0;
         while let Some(row) = rows.try_next().await? {
             let card_hash: String = row.get("card_hash");
             if !card_hashes.contains_key(&card_hash) {
@@ -218,10 +220,19 @@ impl DB {
 
             if let Some(card) = card_hashes.get(&card_hash) {
                 cards.push(card.clone());
+                let review_count: i64 = row.get("review_count");
+                if review_count == 0 {
+                    num_new_cards += 1;
+                }
             }
 
             if let Some(card_limit) = card_limit
                 && cards.len() >= card_limit
+            {
+                break;
+            }
+            if let Some(new_card_limit) = new_card_limit
+                && num_new_cards >= new_card_limit
             {
                 break;
             }
@@ -235,8 +246,10 @@ impl DB {
         let week_horizon = now + chrono::Duration::days(7);
         let month_horizon = now + chrono::Duration::days(30);
 
-        let mut stats = CardStats::default();
-        stats.num_cards = card_hashes.len() as i64;
+        let mut stats = CardStats {
+            num_cards: card_hashes.len() as i64,
+            ..Default::default()
+        };
         let mut upcoming_week_counts: BTreeMap<String, i64> = BTreeMap::new();
 
         let mut rows = sqlx::query(

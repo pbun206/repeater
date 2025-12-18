@@ -201,7 +201,6 @@ dependencies = [
  "iana-time-zone",
  "js-sys",
  "num-traits",
- "serde",
  "wasm-bindgen",
  "windows-link",
 ]
@@ -1326,7 +1325,7 @@ dependencies = [
 
 [[package]]
 name = "repeat"
-version = "0.1.0"
+version = "0.0.6"
 dependencies = [
  "anyhow",
  "blake3",
@@ -1934,9 +1933,7 @@ dependencies = [
  "bytes",
  "libc",
  "mio 1.1.1",
- "parking_lot",
  "pin-project-lite",
- "signal-hook-registry",
  "socket2",
  "tokio-macros",
  "windows-sys 0.61.2",

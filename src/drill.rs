@@ -33,7 +33,7 @@ pub async fn run(
     new_card_limit: Option<usize>,
 ) -> Result<()> {
     let hash_cards = register_all_cards(db, paths).await?;
-    let cards_due_today = db.due_today(hash_cards, card_limit).await?;
+    let cards_due_today = db.due_today(hash_cards, card_limit, new_card_limit).await?;
 
     if cards_due_today.is_empty() {
         println!("All caught up—no cards due today.");
@@ -42,7 +42,6 @@ pub async fn run(
 
     start_drill_session(db, cards_due_today).await?;
 
-    let _ = new_card_limit;
     Ok(())
 }
 
