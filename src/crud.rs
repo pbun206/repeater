@@ -125,7 +125,10 @@ impl DB {
         let new_performance = update_performance(current_performance, review_status, now);
         let card_hash = card.card_hash.clone();
 
-        let result = sqlx::query(
+        let interval_days = new_performance.interval_days as i64;
+        let review_count = new_performance.review_count as i64;
+
+        let result = sqlx::query!(
             r#"
             UPDATE cards
             SET
@@ -138,15 +141,15 @@ impl DB {
                 review_count = ?
             WHERE card_hash = ?
             "#,
+            new_performance.last_reviewed_at,
+            new_performance.stability,
+            new_performance.difficulty,
+            new_performance.interval_raw,
+            interval_days,
+            new_performance.due_date,
+            review_count,
+            card_hash,
         )
-        .bind(new_performance.last_reviewed_at)
-        .bind(new_performance.stability)
-        .bind(new_performance.difficulty)
-        .bind(new_performance.interval_raw)
-        .bind(new_performance.interval_days as i64)
-        .bind(new_performance.due_date)
-        .bind(new_performance.review_count as i64)
-        .bind(card_hash)
         .execute(&self.pool)
         .await?;
 
