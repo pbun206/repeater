@@ -3,6 +3,7 @@ use std::collections::{BTreeMap, HashMap};
 use std::path::PathBuf;
 
 use crate::card::Card;
+use crate::crud::CardStatsRow;
 use crate::fsrs::calculate_recall;
 
 #[derive(Debug, Default)]
@@ -58,16 +59,15 @@ pub enum CardLifeCycle {
 const MATURE_INTERVAL: f64 = 21.0;
 
 impl CardStats {
-    pub fn update(
-        &mut self,
-        card: &Card,
-        review_count: i64,
-        due_date: Option<chrono::DateTime<chrono::Utc>>,
-        interval: f64,
-        difficulty: f64,
-        stability: f64,
-        last_reviewed_at: Option<chrono::DateTime<chrono::Utc>>,
-    ) {
+    // row is a Record
+    pub fn update(&mut self, card: &Card, row: &CardStatsRow) {
+        let review_count = row.review_count;
+        let due_date = row.due_date;
+        let interval = row.interval_raw.unwrap_or_default();
+        let difficulty = row.difficulty.unwrap_or_default();
+        let stability = row.stability.unwrap_or_default();
+        let last_reviewed_at = row.last_reviewed_at;
+
         let now = chrono::Utc::now();
         let week_horizon = now + chrono::Duration::days(7);
         let month_horizon = now + chrono::Duration::days(30);

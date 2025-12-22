@@ -1,7 +1,6 @@
 use anyhow::Result;
 use directories::ProjectDirs;
 use futures::TryStreamExt;
-use sqlx::Row;
 use sqlx::SqlitePool;
 
 use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
@@ -50,8 +49,9 @@ impl DB {
 
     pub async fn add_card(&self, card: &Card) -> Result<()> {
         let now = chrono::Utc::now().to_rfc3339();
+        let card_hash = card.card_hash.clone();
 
-        sqlx::query(
+        sqlx::query!(
             r#"
         INSERT or ignore INTO cards (
             card_hash,
@@ -66,9 +66,9 @@ impl DB {
         )
         VALUES (?, ?, NULL, NULL, NULL, NULL, 0, NULL, 0)
         "#,
+            card_hash,
+            now
         )
-        .bind(&card.card_hash)
-        .bind(now)
         .execute(&self.pool)
         .await?;
 
@@ -81,7 +81,9 @@ impl DB {
         let now = chrono::Utc::now().to_rfc3339();
 
         for card in cards {
-            sqlx::query(
+            let card_hash = card.card_hash.clone();
+            let added_at = now.clone();
+            sqlx::query!(
                 r#"
             INSERT or ignore INTO cards (
                 card_hash,
@@ -96,9 +98,9 @@ impl DB {
             )
             VALUES (?, ?, NULL, NULL, NULL, NULL, 0, NULL, 0)
             "#,
+                card_hash,
+                added_at
             )
-            .bind(&card.card_hash)
-            .bind(&now)
             .execute(&mut *tx)
             .await?;
         }
@@ -108,10 +110,13 @@ impl DB {
     }
 
     pub async fn card_exists(&self, card: &Card) -> Result<bool> {
-        let (count,): (i64,) = sqlx::query_as("SELECT COUNT(1) FROM cards WHERE card_hash = ?")
-            .bind(&card.card_hash)
-            .fetch_one(&self.pool)
-            .await?;
+        let card_hash = card.card_hash.clone();
+        let count: i64 = sqlx::query_scalar!(
+            r#"SELECT COUNT(1) as "count!: i64" FROM cards WHERE card_hash = ?"#,
+            card_hash
+        )
+        .fetch_one(&self.pool)
+        .await?;
         Ok(count > 0)
     }
 
@@ -158,26 +163,48 @@ impl DB {
 
     pub async fn get_card_performance(&self, card: &Card) -> Result<Performance> {
         let card_hash = card.card_hash.clone();
-        let sql = "SELECT added_at, last_reviewed_at, stability, difficulty, interval_raw, interval_days, due_date, review_count 
-           FROM cards
-           WHERE card_hash = ?;";
+        let row = sqlx::query!(
+            r#"
+            SELECT
+                last_reviewed_at as "last_reviewed_at?: chrono::DateTime<chrono::Utc>",
+                stability as "stability?: f64",
+                difficulty as "difficulty?: f64",
+                interval_raw as "interval_raw?: f64",
+                interval_days as "interval_days?: i64",
+                due_date as "due_date?: chrono::DateTime<chrono::Utc>",
+                review_count as "review_count!: i64"
+            FROM cards
+            WHERE card_hash = ?
+            "#,
+            card_hash
+        )
+        .fetch_one(&self.pool)
+        .await?;
 
-        let row = sqlx::query(sql)
-            .bind(card_hash)
-            .fetch_one(&self.pool)
-            .await?;
-
-        let review_count: i64 = row.get("review_count");
+        let review_count: i64 = row.review_count;
         if review_count == 0 {
             return Ok(Performance::default());
         }
         let reviewed = ReviewedPerformance {
-            last_reviewed_at: row.get("last_reviewed_at"),
-            stability: row.get("stability"),
-            difficulty: row.get("difficulty"),
-            interval_raw: row.get("interval_raw"),
-            interval_days: row.get::<i64, _>("interval_days") as usize,
-            due_date: row.get("due_date"),
+            last_reviewed_at: row
+                .last_reviewed_at
+                .ok_or_else(|| anyhow!("missing last_reviewed_at for card {}", card.card_hash))?,
+            stability: row
+                .stability
+                .ok_or_else(|| anyhow!("missing stability for card {}", card.card_hash))?,
+            difficulty: row
+                .difficulty
+                .ok_or_else(|| anyhow!("missing difficulty for card {}", card.card_hash))?,
+            interval_raw: row
+                .interval_raw
+                .ok_or_else(|| anyhow!("missing interval_raw for card {}", card.card_hash))?,
+            interval_days: row
+                .interval_days
+                .ok_or_else(|| anyhow!("missing interval_days for card {}", card.card_hash))?
+                as usize,
+            due_date: row
+                .due_date
+                .ok_or_else(|| anyhow!("missing due_date for card {}", card.card_hash))?,
             review_count: review_count as usize,
         };
 
@@ -192,22 +219,26 @@ impl DB {
     ) -> Result<Vec<Card>> {
         let now = chrono::Utc::now().to_rfc3339();
 
-        let sql = "SELECT card_hash, review_count
-           FROM cards
-           WHERE due_date <= ? OR due_date IS NULL;";
-        let mut rows = sqlx::query(sql).bind(now).fetch(&self.pool);
+        let mut rows = sqlx::query!(
+            r#"
+            SELECT card_hash, review_count as "review_count!: i64"
+            FROM cards
+            WHERE due_date <= ? OR due_date IS NULL
+            "#,
+            now
+        )
+        .fetch(&self.pool);
         let mut cards = Vec::new();
         let mut num_new_cards = 0;
         while let Some(row) = rows.try_next().await? {
-            let card_hash: String = row.get("card_hash");
+            let card_hash = row.card_hash;
             if !card_hashes.contains_key(&card_hash) {
                 continue;
             }
 
             if let Some(card) = card_hashes.get(&card_hash) {
                 cards.push(card.clone());
-                let review_count: i64 = row.get("review_count");
-                if review_count == 0 {
+                if row.review_count == 0 {
                     num_new_cards += 1;
                 }
             }
@@ -233,53 +264,52 @@ impl DB {
             ..Default::default()
         };
 
-        let mut rows = sqlx::query(
+        let mut rows = sqlx::query_as!(
+            CardStatsRow,
             r#"
-            SELECT card_hash, review_count, due_date, interval_raw, difficulty, stability, last_reviewed_at
+            SELECT
+                card_hash,
+                review_count as "review_count!: i64",
+                due_date as "due_date?: chrono::DateTime<chrono::Utc>",
+                interval_raw as "interval_raw?: f64",
+                difficulty as "difficulty?: f64",
+                stability as "stability?: f64",
+                last_reviewed_at as "last_reviewed_at?: chrono::DateTime<chrono::Utc>"
             FROM cards
             "#,
         )
         .fetch(&self.pool);
 
         while let Some(row) = rows.try_next().await? {
-            let card_hash: String = row.get("card_hash");
-            let review_count: i64 = row.get("review_count");
-            let due_date = row
-                .try_get::<Option<String>, _>("due_date")?
-                .and_then(|due| chrono::DateTime::parse_from_rfc3339(&due).ok())
-                .map(|dt| dt.with_timezone(&chrono::Utc));
-            let interval: f64 = row.get("interval_raw");
-            let difficulty: f64 = row.get("difficulty");
-            let stability: f64 = row.get("stability");
-            let last_reviewed_at = row
-                .try_get::<Option<String>, _>("last_reviewed_at")?
-                .and_then(|due| chrono::DateTime::parse_from_rfc3339(&due).ok())
-                .map(|dt| dt.with_timezone(&chrono::Utc));
-
             stats.total_cards_in_db += 1;
+            let card_hash = row.card_hash.clone();
 
             let card = match card_hashes.get(&card_hash) {
                 Some(card) => card,
                 None => continue,
             };
-            stats.update(
-                card,
-                review_count,
-                due_date,
-                interval,
-                difficulty,
-                stability,
-                last_reviewed_at,
-            );
+            stats.update(card, &row);
         }
 
         Ok(stats)
     }
 }
+pub struct CardStatsRow {
+    pub card_hash: String,
+    pub review_count: i64,
+    pub due_date: Option<chrono::DateTime<chrono::Utc>>,
+    pub interval_raw: Option<f64>,
+    pub difficulty: Option<f64>,
+    pub stability: Option<f64>,
+    pub last_reviewed_at: Option<chrono::DateTime<chrono::Utc>>,
+}
 
 async fn probe_schema_exists(pool: &SqlitePool) -> Result<bool, sqlx::Error> {
-    let sql = "select count(*) from sqlite_master where type='table' AND name=?;";
-
-    let count: (i64,) = sqlx::query_as(sql).bind("cards").fetch_one(pool).await?;
-    Ok(count.0 > 0)
+    let count: i64 = sqlx::query_scalar!(
+        r#"select count(*) as "count!: i64" from sqlite_master where type='table' AND name=?;"#,
+        "cards"
+    )
+    .fetch_one(pool)
+    .await?;
+    Ok(count > 0)
 }
