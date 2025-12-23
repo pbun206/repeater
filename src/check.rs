@@ -1,8 +1,8 @@
 use crate::{
     crud::DB,
-    drill::register_all_cards,
     stats::{CardLifeCycle, CardStats, Histogram},
     theme::Theme,
+    utils::register_all_cards,
 };
 
 use std::{cmp, io, path::PathBuf, time::Duration};

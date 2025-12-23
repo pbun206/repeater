@@ -6,13 +6,15 @@ precommit:
     cargo test
 
 delete_db:
-    rm "/Users/shaankhosla/Library/Application Support/repeat/cards.db"
+    -rm "/Users/shaankhosla/Library/Application Support/repeat/cards.db"
+    -touch "/Users/shaankhosla/Library/Application Support/repeat/cards.db"
+    DATABASE_URL="sqlite:///Users/shaankhosla/Library/Application Support/repeat/cards.db" sqlx migrate run
 
 create:
-    cargo run -- create test.md
+    cargo run -- create /Users/shaankhosla/Desktop/sample_repeat_cards/test.md
 
 check:
-    cargo run -- check test.md test_data/ science/
+    cargo run -- check /Users/shaankhosla/Desktop/sample_repeat_cards/
 
 drill:
-    cargo run -- drill test.md test_data/ science/
+    cargo run -- drill /Users/shaankhosla/Desktop/sample_repeat_cards/
