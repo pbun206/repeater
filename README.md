@@ -74,6 +74,16 @@ brew install repeat
    The command prints totals for new/reviewed cards, due/overdue counts, and upcoming workload.
 
 ## Card Format
+Files can be structured in any way, such as:
+
+```
+flashcards/
+  math.md
+  science/
+      physics.md
+      chemistry.md
+      ...
+```
 
 Cards live in ordinary Markdown. `repeat` scans for tagged sections and turns them into flashcards.
 
