@@ -1,7 +1,11 @@
 [package]
 name = "repeat"
-version = "0.0.13"
+version = "0.0.14"
 edition = "2024"
+repository = "https://github.com/shaankhosla/repeat"
+description="Spaced repetition, in your terminal"
+homepage = "https://github.com/shaankhosla/repeat"
+authors = ["shaankhosla"]
 
 [dependencies]
 clap = { version = "4.5.53", features = ["derive"] }
@@ -23,3 +27,8 @@ criterion = { version = "0.5", features = ["async_tokio"] }
 [[bench]]
 name = "register_all_cards_bench"
 harness = false
+
+# The profile that 'dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"
