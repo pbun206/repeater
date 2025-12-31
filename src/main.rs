@@ -1,10 +1,10 @@
 use std::path::PathBuf;
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use clap::{Parser, Subcommand, ValueHint};
 
 use repeat::crud::DB;
-use repeat::{check, create, drill};
+use repeat::{check, create, drill, import};
 
 #[derive(Parser, Debug)]
 #[command(
@@ -57,12 +57,21 @@ enum Command {
         #[arg(value_name = "PATH", value_hint = ValueHint::FilePath)]
         path: PathBuf,
     },
+    /// Import from Anki
+    Import {
+        /// Anki export path. Must be an apkg file
+        #[arg(value_name = "PATH", value_hint = ValueHint::FilePath)]
+        anki_path: PathBuf,
+        /// Directory to export to
+        #[arg(value_name = "PATH", value_hint = ValueHint::AnyPath)]
+        export_path: PathBuf,
+    },
 }
 
 #[tokio::main]
 async fn main() {
-    if let Err(error) = run_cli().await {
-        eprintln!("error: {error}");
+    if let Err(err) = run_cli().await {
+        eprintln!("{:?}", err);
         std::process::exit(1);
     }
 }
@@ -85,6 +94,10 @@ async fn run_cli() -> Result<()> {
         Command::Create { path } => {
             create::run(&db, path).await?;
         }
+        Command::Import {
+            anki_path,
+            export_path,
+        } => import::run(&db, &anki_path, &export_path).await.with_context(|| "Importing from Anki is a work in progress, please report issues on https://github.com/shaankhosla/repeat")?,
     }
 
     Ok(())
