@@ -1,21 +1,24 @@
-## [0.0.22] - 2025-12-31
+## [0.0.23] - 2026-01-02
 
 ### 🚀 Features
 
-- Import from Anki (#17)
+- Show time till next review in drill
+- Flash status on drill/create (#24)
+- Add short-term learning stages (#25)
 
 ### 🐛 Bug Fixes
 
-- Remove dbg statement
+- Db test (#19)
 
 ### 💼 Other
 
-- Fix release pipeline
+- Init (#20)
 
-### 🚜 Refactor
+Co-authored-by: Shaan <shaankhosla@macbook-pro.mynetworksettings.com>
+- Init (#21)
 
-- Made the CLI experience better
+Co-authored-by: Shaan <shaankhosla@macbook-pro.mynetworksettings.com>
 
 ### ⚙️ Miscellaneous Tasks
 
-- Upgrade criterion
+- Fix justfile
