@@ -7,4 +7,5 @@
 - [Card Format](./card-format.md)
 - [Media in Cards](./media-in-cards.md)
 - [Commands](./commands.md)
+- [FSRS Scheduling](./fsrs.md)
 - [Roadmap](./roadmap.md)
