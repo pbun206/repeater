@@ -40,4 +40,4 @@
    repeat check cards
    ```
 
-   The command prints totals for new/reviewed cards, due/overdue counts, and upcoming workload.
+   This launches the full-screen dashboard that shows totals, due/overdue cards, and upcoming workload; press `Esc` or `Ctrl+C` when you want to exit.

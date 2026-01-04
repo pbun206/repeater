@@ -38,7 +38,7 @@ repeat create cards/neuro.md
 
 ### `repeat check [PATH ...]`
 
-Re-index the referenced decks and emit counts for total, new, due, overdue, and upcoming cards.
+Re-index the referenced decks and open the interactive dashboard with totals for new, due, overdue, and upcoming cards (press `Esc`/`Ctrl+C` to exit).
 
 Example:
 
