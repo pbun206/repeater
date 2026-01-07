@@ -9,15 +9,16 @@ use ratatui::{
 pub struct Theme;
 
 impl Theme {
-    pub const BG: Color = Color::Rgb(6, 9, 15);
-    pub const SURFACE: Color = Color::Rgb(16, 22, 35);
-    pub const FG: Color = Color::Rgb(235, 240, 246);
-    pub const MUTED: Color = Color::Rgb(133, 142, 168);
-    pub const ACCENT: Color = Color::Rgb(118, 182, 255);
-    pub const BORDER: Color = Color::Rgb(66, 80, 120);
-    pub const WARNING: Color = Color::Rgb(255, 145, 145);
-    pub const SUCCESS: Color = Color::Rgb(132, 222, 182);
-    pub const EMPHASIS: Color = Color::Rgb(255, 214, 165);
+    pub const BG: Color = Color::Reset;
+    pub const SURFACE: Color = Color::Reset;
+    pub const FG: Color = Color::Reset;
+    pub const KEY_FG: Color = Color::Rgb(255, 255, 255);
+    pub const MUTED: Color = Color::Reset;
+    pub const ACCENT: Color = Color::Blue;
+    pub const BORDER: Color = Color::Gray;
+    pub const WARNING: Color = Color::Yellow;
+    pub const SUCCESS: Color = Color::Green;
+    pub const EMPHASIS: Color = Color::Reset;
 
     pub fn body() -> Style {
         Style::default().fg(Self::FG)
@@ -96,7 +97,7 @@ impl Theme {
         Span::styled(
             format!(" {} ", text.into()),
             Style::default()
-                .fg(Self::BG)
+                .fg(Self::KEY_FG)
                 .bg(Self::ACCENT)
                 .add_modifier(Modifier::BOLD),
         )
