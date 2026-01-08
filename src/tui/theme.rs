@@ -69,8 +69,8 @@ impl Theme {
         Span::styled(text.into(), Self::label())
     }
 
-    pub fn muted_span(text: impl Into<String>) -> Span<'static> {
-        Span::styled(text.into(), Self::muted())
+    pub fn span(text: impl Into<String>) -> Span<'static> {
+        Span::raw(text.into())
     }
 
     pub fn key_chip(text: impl Into<String>) -> Span<'static> {
@@ -84,7 +84,7 @@ impl Theme {
     }
 
     pub fn bullet() -> Span<'static> {
-        Span::styled(" • ", Self::muted())
+        Self::span(" • ")
     }
 
     pub fn section_header(text: impl Into<String>) -> Line<'static> {

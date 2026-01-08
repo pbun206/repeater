@@ -118,19 +118,19 @@ fn draw_dashboard(frame: &mut Frame<'_>, stats: &CardStats) {
 fn collection_panel(stats: &CardStats) -> Paragraph<'static> {
     let lines = vec![
         Line::from(vec![
-            Theme::muted_span("Tracked cards"),
+            Theme::span("Tracked cards"),
             Theme::bullet(),
             Theme::label_span(format!("{}", stats.num_cards)),
         ]),
         Line::from(vec![
-            Theme::muted_span("New"),
+            Theme::span("New"),
             Theme::bullet(),
             Theme::label_span(format!(
                 "{}",
                 *stats.card_lifecycles.get(&CardLifeCycle::New).unwrap_or(&0)
             )),
             Theme::bullet(),
-            Theme::muted_span("Young"),
+            Theme::span("Young"),
             Theme::bullet(),
             Theme::label_span(format!(
                 "{}",
@@ -140,7 +140,7 @@ fn collection_panel(stats: &CardStats) -> Paragraph<'static> {
                     .unwrap_or(&0)
             )),
             Theme::bullet(),
-            Theme::muted_span("Mature"),
+            Theme::span("Mature"),
             Theme::bullet(),
             Theme::label_span(format!(
                 "{}",
@@ -151,12 +151,12 @@ fn collection_panel(stats: &CardStats) -> Paragraph<'static> {
             )),
         ]),
         Line::from(vec![
-            Theme::muted_span("Files in Collection"),
+            Theme::span("Files in Collection"),
             Theme::bullet(),
             Theme::label_span(format!("{}", stats.file_paths.len())),
         ]),
         Line::from(vec![
-            Theme::muted_span("Total Cards Indexed in DB"),
+            Theme::span("Total Cards Indexed in DB"),
             Theme::bullet(),
             Theme::label_span(format!("{}", stats.total_cards_in_db)),
         ]),
@@ -181,21 +181,21 @@ fn due_panel(stats: &CardStats) -> Paragraph<'static> {
     let lines = vec![
         Line::from(vec![Span::styled("Focus", emphasis)]),
         Line::from(vec![
-            Theme::muted_span("Due load"),
+            Theme::span("Due load"),
             Theme::bullet(),
             Theme::label_span(format!("{:.0}%", load_factor * 100.0)),
             Theme::bullet(),
-            Theme::muted_span("Due now"),
+            Theme::span("Due now"),
             Theme::bullet(),
             Theme::label_span(format!("{}", stats.due_cards)),
-            Span::raw("  "),
+            Theme::span("  "),
         ]),
         Line::from(vec![
-            Theme::muted_span("Next 7 days"),
+            Theme::span("Next 7 days"),
             Theme::bullet(),
             Theme::label_span(format!("{}", upcoming_week_total)),
             Theme::bullet(),
-            Theme::muted_span("Next 30 days"),
+            Theme::span("Next 30 days"),
             Theme::bullet(),
             Theme::label_span(format!("{}", stats.upcoming_month)),
         ]),
@@ -206,7 +206,7 @@ fn due_panel(stats: &CardStats) -> Paragraph<'static> {
 fn render_upcoming_histogram(frame: &mut Frame<'_>, area: Rect, stats: &CardStats) {
     let block = Theme::panel_with_line(Theme::title_line("Next 7 days histogram"));
     if stats.upcoming_week.is_empty() {
-        let empty = Paragraph::new(vec![Line::from(vec![Theme::muted_span(
+        let empty = Paragraph::new(vec![Line::from(vec![Theme::span(
             "You're clear for the next 7 days.",
         )])])
         .block(block);
@@ -239,7 +239,7 @@ fn render_upcoming_histogram(frame: &mut Frame<'_>, area: Rect, stats: &CardStat
             Bar::default()
                 .value(*count as u64)
                 .text_value(count.to_string())
-                .label(Line::from(vec![Theme::muted_span(label)]))
+                .label(Line::from(vec![Theme::span(label)]))
                 .style(Theme::label())
         })
         .collect();
@@ -286,16 +286,15 @@ fn render_fsrs_histogram(
         Line::from(vec![
             Span::styled(format!("Card {}:", title), Theme::emphasis()),
             Theme::bullet(),
-            Theme::muted_span("Average"),
+            Theme::span("Average"),
             Theme::bullet(),
             Theme::label_span(histogram_stats.mean().map_or_else(
                 || "NA - No cards reviewed".to_string(),
                 |v| format!("{}%", (v * 100.0).round()),
             )),
         ]),
-        Line::from(Theme::muted_span(description)),
-    ])
-    .style(Theme::body());
+        Line::from(Theme::span(description)),
+    ]);
     frame.render_widget(difficulty_header, section_chunks[0]);
     let step_size = 100 / histogram_stats.bins.len().max(1);
     let bars: Vec<Bar> = histogram_stats
@@ -308,7 +307,7 @@ fn render_fsrs_histogram(
             Bar::default()
                 .value(*count as u64)
                 .text_value(count.to_string())
-                .label(Line::from(vec![Theme::muted_span(label)]))
+                .label(Line::from(vec![Theme::span(label)]))
                 .style(Theme::label())
         })
         .collect();
@@ -339,7 +338,7 @@ fn render_fsrs_histogram(
 fn render_fsrs_panel(frame: &mut Frame<'_>, area: Rect, stats: &CardStats) {
     let block = Theme::panel_with_line(Theme::title_line("FSRS Memory Health"));
     if stats.upcoming_week.is_empty() {
-        let empty = Paragraph::new(vec![Line::from(vec![Theme::muted_span(
+        let empty = Paragraph::new(vec![Line::from(vec![Theme::span(
             "No FSRS statistics to display",
         )])])
         .block(block);
