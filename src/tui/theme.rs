@@ -9,31 +9,14 @@ use ratatui::{
 pub struct Theme;
 
 impl Theme {
-    pub const BG: Color = Color::Reset;
-    pub const SURFACE: Color = Color::Reset;
-    pub const FG: Color = Color::Reset;
     pub const KEY_FG: Color = Color::Rgb(255, 255, 255);
-    pub const MUTED: Color = Color::Reset;
     pub const ACCENT: Color = Color::Blue;
     pub const BORDER: Color = Color::Gray;
     pub const WARNING: Color = Color::Yellow;
     pub const SUCCESS: Color = Color::Green;
-    pub const EMPHASIS: Color = Color::Reset;
 
-    pub fn body() -> Style {
-        Style::default().fg(Self::FG)
-    }
-
-    pub fn screen() -> Style {
-        Style::default().bg(Self::BG).fg(Self::FG)
-    }
-
-    pub fn surface() -> Style {
-        Style::default().bg(Self::SURFACE).fg(Self::FG)
-    }
-
-    pub fn muted() -> Style {
-        Style::default().fg(Self::MUTED)
+    pub fn default_style() -> Style {
+        Style::default()
     }
 
     pub fn label() -> Style {
@@ -56,7 +39,6 @@ impl Theme {
 
     pub fn emphasis() -> Style {
         Style::default()
-            .fg(Self::EMPHASIS)
             .add_modifier(Modifier::BOLD)
     }
 
@@ -65,7 +47,7 @@ impl Theme {
     }
 
     pub fn backdrop<'a>() -> Block<'a> {
-        Block::default().style(Self::screen())
+        Block::default()
     }
 
     pub fn panel_with_line<'a>(title: Line<'a>) -> Block<'a> {
@@ -73,7 +55,6 @@ impl Theme {
             .borders(Borders::ALL)
             .border_type(BorderType::Rounded)
             .border_style(Style::default().fg(Self::BORDER))
-            .style(Self::surface())
             .title(title)
             .title_alignment(Alignment::Left)
     }
