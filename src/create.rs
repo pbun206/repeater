@@ -128,7 +128,6 @@ async fn capture_cards(db: &DB, card_path: &Path) -> Result<()> {
 
                 let editor_block = Theme::panel(card_path.display().to_string());
                 let editor_widget = Paragraph::new(editor.content())
-                    .style(Theme::body())
                     .block(editor_block)
                     .wrap(Wrap { trim: false })
                     .scroll((editor.scroll_top() as u16, 0));

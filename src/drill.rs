@@ -199,14 +199,12 @@ async fn start_drill_session(db: &DB, cards: Vec<Card>) -> Result<()> {
                     state.current_medias = extract_media(&content, card.file_path.parent());
 
                     let card_widget = Paragraph::new(markdown)
-                        .style(Theme::body())
                         .block(Theme::panel_with_line(header_line))
                         .wrap(Wrap { trim: false });
                     frame.render_widget(card_widget, chunks[0]);
 
                     let instructions = instructions_text(&state);
                     let footer = Paragraph::new(instructions)
-                        .style(Theme::body())
                         .block(Theme::panel_with_line(Theme::section_header("Controls")));
                     frame.render_widget(footer, chunks[1]);
                 })

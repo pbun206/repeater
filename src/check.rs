@@ -161,9 +161,7 @@ fn collection_panel(stats: &CardStats) -> Paragraph<'static> {
             Theme::label_span(format!("{}", stats.total_cards_in_db)),
         ]),
     ];
-    Paragraph::new(lines)
-        .style(Theme::body())
-        .block(Theme::panel("Collection"))
+    Paragraph::new(lines).block(Theme::panel("Collection"))
 }
 
 fn due_panel(stats: &CardStats) -> Paragraph<'static> {
@@ -202,9 +200,7 @@ fn due_panel(stats: &CardStats) -> Paragraph<'static> {
             Theme::label_span(format!("{}", stats.upcoming_month)),
         ]),
     ];
-    Paragraph::new(lines)
-        .style(Theme::body())
-        .block(Theme::panel("Due Status"))
+    Paragraph::new(lines).block(Theme::panel("Due Status"))
 }
 
 fn render_upcoming_histogram(frame: &mut Frame<'_>, area: Rect, stats: &CardStats) {
@@ -213,7 +209,6 @@ fn render_upcoming_histogram(frame: &mut Frame<'_>, area: Rect, stats: &CardStat
         let empty = Paragraph::new(vec![Line::from(vec![Theme::muted_span(
             "You're clear for the next 7 days.",
         )])])
-        .style(Theme::body())
         .block(block);
         frame.render_widget(empty, area);
         return;
@@ -264,11 +259,8 @@ fn render_upcoming_histogram(frame: &mut Frame<'_>, area: Rect, stats: &CardStat
     let chart = BarChart::default()
         .data(BarGroup::default().bars(&bars))
         .bar_width(bar_width)
-        .bar_gap(bar_gap)
-        .value_style(Theme::body())
-        .label_style(Theme::muted())
         .bar_style(Theme::label())
-        .style(Theme::body());
+        .bar_gap(bar_gap);
 
     frame.render_widget(chart, chart_area);
 }
@@ -331,10 +323,7 @@ fn render_fsrs_histogram(
         .data(BarGroup::default().bars(&bars))
         .bar_width(bar_height)
         .bar_gap(0)
-        .value_style(Theme::body())
-        .label_style(Theme::muted())
         .bar_style(Theme::label())
-        .style(Theme::body())
         .direction(Direction::Horizontal);
 
     let mut chart_area = section_chunks[1];
@@ -353,7 +342,6 @@ fn render_fsrs_panel(frame: &mut Frame<'_>, area: Rect, stats: &CardStats) {
         let empty = Paragraph::new(vec![Line::from(vec![Theme::muted_span(
             "No FSRS statistics to display",
         )])])
-        .style(Theme::body())
         .block(block);
         frame.render_widget(empty, area);
         return;
@@ -385,21 +373,20 @@ fn help_panel(stats: &CardStats) -> Paragraph<'static> {
     let lines = vec![
         Line::from(vec![
             Theme::key_chip("Esc"),
-            Span::styled(" / ", Theme::muted()),
+            Theme::span("/ "),
             Theme::key_chip("Ctrl+C"),
-            Span::styled(" exit", Theme::muted()),
+            Theme::span(" exit"),
         ]),
         Line::from(vec![
-            Theme::muted_span("Snapshot covers"),
+            Theme::span("Snapshot covers"),
             Theme::bullet(),
             Theme::label_span(format!("{} cards", stats.num_cards)),
             Theme::bullet(),
-            Theme::muted_span("Rerun command anytime to refresh data"),
+            Theme::span("Rerun command anytime to refresh data"),
         ]),
     ];
 
     Paragraph::new(lines)
-        .style(Theme::body())
         .block(Theme::panel_with_line(Theme::section_header("Controls")))
         .wrap(Wrap { trim: true })
 }

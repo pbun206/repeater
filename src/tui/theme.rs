@@ -38,8 +38,7 @@ impl Theme {
     }
 
     pub fn emphasis() -> Style {
-        Style::default()
-            .add_modifier(Modifier::BOLD)
+        Style::default().add_modifier(Modifier::BOLD)
     }
 
     pub fn panel<'a>(title: impl Into<String>) -> Block<'a> {
